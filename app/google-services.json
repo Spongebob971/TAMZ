@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "217130207487",
+    "firebase_url": "https://chessfirebase-99a76.firebaseio.com",
+    "project_id": "chessfirebase-99a76",
+    "storage_bucket": "chessfirebase-99a76.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:217130207487:android:8899d4052b74a37d",
+        "android_client_info": {
+          "package_name": "com.example.janpy.chess"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "217130207487-qea355d5ustlrka6u7nt4ljlple1iass.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.janpy.chess",
+            "certificate_hash": "22bf8714d7a5066477dab288baa160ef23097694"
+          }
+        },
+        {
+          "client_id": "217130207487-keecqnp5s4aarhq16rbj2vovphps388i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB0T63tkD-BYOabegPYkrPuky-bimM_FF0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "217130207487-keecqnp5s4aarhq16rbj2vovphps388i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
