@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/chess_background"
+    android:background="@drawable/orange_menu"
     android:gravity="center"
     android:includeFontPadding="false"
     tools:context=".CreatingRoom"
@@ -26,10 +26,23 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="116dp"
-        android:text="My Text View"
+        android:hint="room name"
         android:textSize="25dp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/textViewTime"
+        android:layout_width="137dp"
+        android:layout_height="wrap_content"
+        android:hint="seconds"
+        android:textStyle="bold"
+        android:textSize="25dp"
+        android:inputType="numberSigned"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editText" />
+
 </android.support.constraint.ConstraintLayout>

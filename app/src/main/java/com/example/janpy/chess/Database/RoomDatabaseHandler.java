@@ -10,7 +10,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.lang.ref.Reference;
+
 public class RoomDatabaseHandler {
+
+    public void getEmail(){
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("ChessRooms");
+    }
 
      public static void add(Room room){
         FirebaseDatabase database = FirebaseDatabase.getInstance();

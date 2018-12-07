@@ -275,7 +275,30 @@ public class MoveCalculation {
         if(  coordinates.y < 7 && (board[coordinates.x][coordinates.y + 1] == null || board[coordinates.x][coordinates.y + 1].getColor().equals(figure.getEnemyColor()))){
             possibleMoves.add(new Point(coordinates.x, coordinates.y + 1));
         }
+        if(figure.getFirstMove()){
+            if(figure.getColor().equals("white")){
+                if( coordinates.x <= 4 && board[coordinates.x + 1][coordinates.y] == null && board[coordinates.x + 2][coordinates.y] == null && board[coordinates.x+3][ coordinates.y] != null &&
+                        board[coordinates.x + 3][coordinates.y].getFileName().equals("white_rook")){
+                    possibleMoves.add(new Point(coordinates.x + 2, coordinates.y));
+                }
+                if(coordinates.x >= 4 && board[coordinates.x - 1][coordinates.y] == null && board[coordinates.x - 2][coordinates.y] == null &&
+                      board[coordinates.x - 3][coordinates.y] == null && board[coordinates.x - 4][ coordinates.y] != null && board[coordinates.x - 4][coordinates.y].getFileName().equals("white_rook")){
+                    possibleMoves.add(new Point(coordinates.x - 2, coordinates.y));
+                }
+            }
+            if(figure.getColor().equals("black")){
+                if( coordinates.x <= 4 && board[coordinates.x + 1][coordinates.y] == null && board[coordinates.x + 2][coordinates.y] == null &&
+                        board[coordinates.x+3][ coordinates.y] != null && board[coordinates.x + 3][coordinates.y].getFileName().equals("black_rook")){
+                    possibleMoves.add(new Point(coordinates.x + 2, coordinates.y));
+                }
+                if( coordinates.x >= 4 && board[coordinates.x - 1][coordinates.y] == null && board[coordinates.x - 2][coordinates.y] == null &&
+                        board[coordinates.x - 3][coordinates.y] == null && board[coordinates.x - 4][ coordinates.y] != null && board[coordinates.x - 4][coordinates.y].getFileName().equals("black_rook")){
+                    possibleMoves.add(new Point(coordinates.x - 2, coordinates.y));
+                }
+            }
+        }
     }
+
 
     private static void checkMovementAllowedPositions(Figure[][] board, Point coordinates,  ArrayList<Point> possibleMoves, King figure,  ArrayList<Point> enemyPossibleMoves ){
         // check movement allowedPos

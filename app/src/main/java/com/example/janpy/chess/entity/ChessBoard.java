@@ -143,10 +143,10 @@ public class ChessBoard extends View {
                             if(obj.x == touchCoordinates.x && obj.y == touchCoordinates.y){
                                 ArrayList<Move> moves = Game.room.getMoves();
                                 moves.add(new Move(new Point(figureBufferCoordinates.x, figureBufferCoordinates.y), new Point(touchCoordinates.x, touchCoordinates.y)));
+                                move(moves);
                                 Game.room.setMoves(moves);
-                                move();
-                                invalidate();
                                 RoomDatabaseHandler.addMoves(Game.room);
+                                invalidate();
                                 break;
                             }
                         }
@@ -157,14 +157,31 @@ public class ChessBoard extends View {
         return super.onTouchEvent(event);
     }
 
-    private void move(){
+    private void move(ArrayList<Move> moves){
         Game.mp.start();
         for( Point obj : possibleMoves){
+
             if(obj.x == touchCoordinates.x && obj.y == touchCoordinates.y){
-                board[touchCoordinates.x][touchCoordinates.y] = figureBuffer;
-                board[figureBufferCoordinates.x][figureBufferCoordinates.y] = null;
-                if(board[touchCoordinates.x][touchCoordinates.y].getFileName().equals("white_peon") ||
-                        board[touchCoordinates.x][touchCoordinates.y].getFileName().equals("black_peon")) board[touchCoordinates.x][touchCoordinates.y].setFirstMove(false);
+                board[figureBufferCoordinates.x][figureBufferCoordinates.y].setFirstMove(false);
+
+                if(figureBuffer.getFileName().equals("black_king") || figureBuffer.getFileName().equals("white_king")){
+                    if(figureBufferCoordinates.x + 2 == touchCoordinates.x){
+                        board[touchCoordinates.x][touchCoordinates.y] = figureBuffer;
+                        board[touchCoordinates.x - 1 ][touchCoordinates.y] =  board[touchCoordinates.x + 1 ][touchCoordinates.y];
+                        board[touchCoordinates.x + 1][figureBufferCoordinates.y] = null;
+                        board[figureBufferCoordinates.x][figureBufferCoordinates.y] = null;
+                        break;
+                    }
+                    else if(figureBufferCoordinates.x - 2 == touchCoordinates.x){
+                        board[touchCoordinates.x][touchCoordinates.y] = figureBuffer;
+                        board[touchCoordinates.x + 1 ][touchCoordinates.y] =  board[touchCoordinates.x - 2 ][touchCoordinates.y];
+                        board[touchCoordinates.x - 2 ][touchCoordinates.y] = null;
+                        board[figureBufferCoordinates.x][figureBufferCoordinates.y] = null;
+                        break;
+                    }
+                }
+                    board[touchCoordinates.x][touchCoordinates.y] = figureBuffer;
+                    board[figureBufferCoordinates.x][figureBufferCoordinates.y] = null;
                 break;
             }
         }
@@ -187,7 +204,7 @@ public class ChessBoard extends View {
         Point tmpPoint = new Point();
         for(int i = 0 ; i < 8; i++){
             for (int j = 0 ; j < 8; j++){
-                if(board[i][j] == null) return false;
+                if(board[i][j] == null) continue;
                 if(board[i][j] != null && board[i][j].getColor().equals(Player.color)){
                     moves = board[i][j].getPossibleMoves(board, tmpPoint);
                     MoveCalculation.isMyKingChecked(board, touchCoordinates, moves, board[touchCoordinates.x][touchCoordinates.y]);

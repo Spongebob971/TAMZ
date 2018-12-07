@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
+import android.net.ParseException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +17,9 @@ import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.janpy.chess.Database.RoomDatabaseHandler;
@@ -34,7 +38,9 @@ import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class Game extends AppCompatActivity {
     private static Figure[][] board;
@@ -109,8 +115,23 @@ public class Game extends AppCompatActivity {
                 if(moveFromServer == null || (move.getMoveTo().equals(moveFromServer.getMoveTo()) && move.getMoveFrom().equals(moveFromServer.getMoveFrom()))) return;
                 Game.room.addMove(dataSnapshot.getValue(Move.class));
                 Game.room.printMoves();
+                //castle CONTROL
+                if(Game.board[moveFromServer.getMoveFrom().x][moveFromServer.getMoveFrom().y].getFileName().equals("black_king")
+                        ||Game.board[moveFromServer.getMoveFrom().x][moveFromServer.getMoveFrom().y].getFileName().equals("white_king")){
+                    if(moveFromServer.getMoveFrom().x  + 2 == moveFromServer.getMoveTo().x ){
+                        Game.board[moveFromServer.getMoveTo().x - 1 ][moveFromServer.getMoveTo().y] = Game.board[moveFromServer.getMoveTo().x + 1 ][moveFromServer.getMoveTo().y];
+                        Game.board[moveFromServer.getMoveTo().x + 1 ][moveFromServer.getMoveTo().y] = null;
+                    }
+
+                    if(moveFromServer.getMoveFrom().x - 2 == moveFromServer.getMoveTo().x){
+                        Game.board[moveFromServer.getMoveTo().x + 1][moveFromServer.getMoveTo().y] = Game.board[moveFromServer.getMoveTo().x - 2][moveFromServer.getMoveTo().y];
+                        Game.board[moveFromServer.getMoveTo().x - 2][moveFromServer.getMoveTo().y] = null;
+                    }
+                }
+
                 Game.board[moveFromServer.getMoveTo().x][moveFromServer.getMoveTo().y] = Game.board[moveFromServer.getMoveFrom().x][moveFromServer.getMoveFrom().y];
                 Game.board[moveFromServer.getMoveFrom().x][moveFromServer.getMoveFrom().y] = null;
+
                 chessBoard.invalidate();
                 mp.start();
                 if(chessBoard.controlCheckMate()){
@@ -120,7 +141,7 @@ public class Game extends AppCompatActivity {
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putInt("amountOfGames", tmp);
                     editor.apply();
-
+                    addStatisticToRow();
                 }
             }
 
@@ -146,6 +167,31 @@ public class Game extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void addStatisticToRow(){
+        TableLayout tl=(TableLayout)findViewById(R.id.tableLayout);
+        TableRow tr = new TableRow(this);
+
+        TextView textviewDate = new TextView(this);
+        TextView textViewWin = new TextView(this);
+        TextView textViewLose = new TextView(this);
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+        try {
+            textviewDate.setText(format.format(calendar.getTime()));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        textViewWin.setText("0");
+        textViewLose.setText("1");
+
+        tr.addView(textviewDate);
+        tr.addView(textViewWin);
+        tr.addView(textViewLose);
+
+        // vsechno je OK, jen mi to hazi null kvuli tomu ze tablelayout neni vytvoreny
+        tl.addView(tr);
     }
 
     public static SharedPreferences getSharedPreferences(Context context){
