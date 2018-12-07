@@ -24,6 +24,7 @@ import com.example.janpy.chess.R;
 import com.example.janpy.chess.figures.Figure;
 import com.example.janpy.chess.figures.Peon;
 
+import java.sql.Date;
 import java.util.ArrayList;
 
 public class ChessBoard extends View {
@@ -253,7 +254,17 @@ public class ChessBoard extends View {
         tmp = sharedPreferences.getInt("amountOfWinGames", 0);
         tmp++;
         editor.putInt("amountOfWinGames", tmp);
+
+        int size = sharedPreferences.getInt("sizeOfTableGame", 0);
+        Date date = new Date(System.currentTimeMillis());
+        editor.putInt("Win_" + size,    1);
+        editor.putInt("Lose_" + size,    0);
+        editor.putLong("Date_" + size,  date.getTime());
+        editor.putInt("sizeOfTableGame",++size);
+        editor.putInt("amountOfGames", tmp);
         editor.apply();
+
+
     }
 
     private void drawEndOfGame(Canvas canvas){

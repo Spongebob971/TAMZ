@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TableLayout;
@@ -38,29 +39,34 @@ import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 
+import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class Game extends AppCompatActivity {
     private static Figure[][] board;
     public static Point screenSize = new Point();
     public static Room room;
+
     public static boolean flagMovement;
     public static SharedPreferences sharedPreferences;
     public static Display display;
     public static MediaPlayer mp;
+    public static List<TableRow> tableRows;
+
     private ChessBoard chessBoard ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         chessBoard = new ChessBoard(this);
+        tableRows = new ArrayList<TableRow>();
         mp = MediaPlayer.create(this, R.raw.movement);
         setContentView(chessBoard);
         Intent i = getIntent();
         room = (Room) i.getParcelableExtra("parcel");
         RoomDatabaseHandler.addPlayer(room);
-        Log.d("Trida", "printVGame");
         init();
         initDatabaseListener();
     }
@@ -135,13 +141,7 @@ public class Game extends AppCompatActivity {
                 chessBoard.invalidate();
                 mp.start();
                 if(chessBoard.controlCheckMate()){
-                    sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-                    int tmp = sharedPreferences.getInt("amountOfGames", 0);
-                    tmp++;
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putInt("amountOfGames", tmp);
-                    editor.apply();
-                    addStatisticToRow();
+                    sharePrefrencesHandler();
                 }
             }
 
@@ -169,30 +169,23 @@ public class Game extends AppCompatActivity {
         });
     }
 
-    private void addStatisticToRow(){
-        TableLayout tl=(TableLayout)findViewById(R.id.tableLayout);
-        TableRow tr = new TableRow(this);
+    private void sharePrefrencesHandler(){
+        sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        int tmp = sharedPreferences.getInt("amountOfGames", 0);
+        tmp++;
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("amountOfGames", tmp);
 
-        TextView textviewDate = new TextView(this);
-        TextView textViewWin = new TextView(this);
-        TextView textViewLose = new TextView(this);
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-        try {
-            textviewDate.setText(format.format(calendar.getTime()));
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        textViewWin.setText("0");
-        textViewLose.setText("1");
-
-        tr.addView(textviewDate);
-        tr.addView(textViewWin);
-        tr.addView(textViewLose);
-
-        // vsechno je OK, jen mi to hazi null kvuli tomu ze tablelayout neni vytvoreny
-        tl.addView(tr);
+        int size = sharedPreferences.getInt("sizeOfTableGame", 0);
+        Date date = new Date(System.currentTimeMillis());
+        editor.putInt("Win_" + size,    0);
+        editor.putInt("Lose_" + size,    1);
+        editor.putLong("Date_" + size,  date.getTime());
+        editor.putInt("sizeOfTableGame",++size);
+        editor.putInt("amountOfGames", tmp);
+        editor.apply();
     }
+
 
     public static SharedPreferences getSharedPreferences(Context context){
         return  context.getSharedPreferences("userInfo",Context.MODE_PRIVATE);
