@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.janpy.chess.Database.RoomDatabaseHandler;
 import com.example.janpy.chess.Game;
 import com.example.janpy.chess.LouncherActivity;
 import com.example.janpy.chess.MainActivity;
@@ -45,9 +46,48 @@ public class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.MyViewHolder> 
                 String stringId = id.getText().toString();
 
                 for(Room r : myRooms){
+
                     if(r.getID().equals(stringId)){
+                        //**********************************************
+
+                        ArrayList<Move> moves = new ArrayList<>();
+                        moves = RoomDatabaseHandler.getMoves(r);
+                       // moves  = RoomDatabaseHandler.moves;
+
+                        Log.d("Trida", "helloVIEWADAOTER");
+
+                        for(Move move : moves){
+                            Log.d("Trida", " move X : "  + move.getMoveFrom().x + "  " + move.getMoveFrom().y);
+                        }
+
+                        r.setMoves(moves);
+
+                        Player.color = "black";
+                        if(moves.size() % 2 == 1){
+                            Player.movementAllowed = true;
+                        }else{
+                            Player.movementAllowed = false;
+                        }
+
                         Player.color = "black";
                         Player.movementAllowed = false;
+
+                        //********************************************
+                        for( Room room : Player.createdRooms){
+                            Log.d("Trida", room.getID());
+                            Log.d("Trida", r.getID());
+
+                            if(room.getID().equals(r.getID())){
+                                Player.color = "white";
+                                if(moves.size() % 2 == 0){
+                                    Player.movementAllowed = true;
+                                }else{
+                                    Player.movementAllowed = false;
+                                }
+                            }
+                        }
+                        //control castle
+
                         Intent intent = new Intent(context, Game.class);
                         intent.putExtra("parcel", r);
                         context.startActivity(intent);

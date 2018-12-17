@@ -86,8 +86,12 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent2 = new Intent(this, Statistics.class);
                 startActivity(intent2);
                 return true;
+            case R.id.exit:
+                moveTaskToBack(true);
+                android.os.Process.killProcess(android.os.Process.myPid());
+                System.exit(1);
+                return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -97,7 +101,6 @@ public class MainActivity extends AppCompatActivity {
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 roomList.add(dataSnapshot.getValue(Room.class));
                 viewAdapter.notifyDataSetChanged();
-                Log.d("Trida", "addedd room");
             }
 
             @Override
@@ -124,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 viewAdapter.notifyDataSetChanged();
-                Log.d("Trida", "room removed");
             }
 
             @Override

@@ -9,6 +9,7 @@ import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.net.ParseException;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -38,6 +39,7 @@ import com.example.janpy.chess.figures.Rook;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
@@ -50,25 +52,43 @@ public class Game extends AppCompatActivity {
     public static Point screenSize = new Point();
     public static Room room;
 
+
+
+    boolean listenerInitialized = false;
+
     public static boolean flagMovement;
     public static SharedPreferences sharedPreferences;
     public static Display display;
     public static MediaPlayer mp;
     public static List<TableRow> tableRows;
+    private static ChildEventListener moveListener;
 
     private ChessBoard chessBoard ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if(chessBoard == null)
         chessBoard = new ChessBoard(this);
-        tableRows = new ArrayList<TableRow>();
-        mp = MediaPlayer.create(this, R.raw.movement);
+        findViewById(R.id.linearLayout);
         setContentView(chessBoard);
+       // setContentView(R.layout.activity_game);
+        //sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        //sharedPreferences.edit().clear().commit();
+
+        mp = MediaPlayer.create(this, R.raw.movement);
+
         Intent i = getIntent();
         room = (Room) i.getParcelableExtra("parcel");
-        RoomDatabaseHandler.addPlayer(room);
+
+        //**********************************************
+
+        //RoomDatabaseHandler.addPlayer(room);
         init();
-        initDatabaseListener();
+        if(!listenerInitialized){
+            initDatabaseListener();
+            listenerInitialized = true;
+        }
     }
 
     public void init(){
@@ -100,100 +120,111 @@ public class Game extends AppCompatActivity {
         board[3][7] = new Queen("white", BitmapFactory.decodeResource(getResources(), R.drawable.white_queen));
         board[4][7] = new King("white", BitmapFactory.decodeResource(getResources(), R.drawable.white_king));
         board[4][0] = new King("black", BitmapFactory.decodeResource(getResources(), R.drawable.black_king));
+
+        chessBoard.setBoard(board);
     }
 
     private void initDatabaseListener(){
-        RoomDatabaseHandler.addOnMovesListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+            moveListener = new ChildEventListener() {
+                @Override
+                public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                    Log.d("Trida", "DATABASE LISTENER CALLED");
 
-                Player.movementAllowed = !Player.movementAllowed;
+                    Player.movementAllowed = !Player.movementAllowed;
 
-                Move move = new Move();
-                if(Game.room.getMoves().isEmpty()){
-                    move.setMoveFrom(new Point(-1,-1));
-                    move.setMoveTo(new Point(-1,-1));
-                }else{
-                    move = Game.room.getMoves().get(Game.room.getMoves().size() - 1);
-                }
-
-                Move moveFromServer = dataSnapshot.getValue(Move.class);
-                if(moveFromServer == null || (move.getMoveTo().equals(moveFromServer.getMoveTo()) && move.getMoveFrom().equals(moveFromServer.getMoveFrom()))) return;
-                Game.room.addMove(dataSnapshot.getValue(Move.class));
-                Game.room.printMoves();
-                //castle CONTROL
-                if(Game.board[moveFromServer.getMoveFrom().x][moveFromServer.getMoveFrom().y].getFileName().equals("black_king")
-                        ||Game.board[moveFromServer.getMoveFrom().x][moveFromServer.getMoveFrom().y].getFileName().equals("white_king")){
-                    if(moveFromServer.getMoveFrom().x  + 2 == moveFromServer.getMoveTo().x ){
-                        Game.board[moveFromServer.getMoveTo().x - 1 ][moveFromServer.getMoveTo().y] = Game.board[moveFromServer.getMoveTo().x + 1 ][moveFromServer.getMoveTo().y];
-                        Game.board[moveFromServer.getMoveTo().x + 1 ][moveFromServer.getMoveTo().y] = null;
+                    Move move = new Move();
+                    if(Game.room.getMoves().isEmpty()){
+                        move.setMoveFrom(new Point(-1,-1));
+                        move.setMoveTo(new Point(-1,-1));
+                    }else{
+                        move = Game.room.getMoves().get(Game.room.getMoves().size() - 1);
                     }
 
-                    if(moveFromServer.getMoveFrom().x - 2 == moveFromServer.getMoveTo().x){
-                        Game.board[moveFromServer.getMoveTo().x + 1][moveFromServer.getMoveTo().y] = Game.board[moveFromServer.getMoveTo().x - 2][moveFromServer.getMoveTo().y];
-                        Game.board[moveFromServer.getMoveTo().x - 2][moveFromServer.getMoveTo().y] = null;
+                    Move moveFromServer = dataSnapshot.getValue(Move.class);
+                    if(moveFromServer == null || (move.getMoveTo().equals(moveFromServer.getMoveTo()) && move.getMoveFrom().equals(moveFromServer.getMoveFrom()))) return;
+                    Game.room.addMove(dataSnapshot.getValue(Move.class));
+                    //castle CONTROL
+                    if(Game.board[moveFromServer.getMoveFrom().x][moveFromServer.getMoveFrom().y].getFileName().equals("black_king")
+                            ||Game.board[moveFromServer.getMoveFrom().x][moveFromServer.getMoveFrom().y].getFileName().equals("white_king")){
+                        if(moveFromServer.getMoveFrom().x  + 2 == moveFromServer.getMoveTo().x ){
+                            Game.board[moveFromServer.getMoveTo().x - 1 ][moveFromServer.getMoveTo().y] = Game.board[moveFromServer.getMoveTo().x + 1 ][moveFromServer.getMoveTo().y];
+                            Game.board[moveFromServer.getMoveTo().x + 1 ][moveFromServer.getMoveTo().y] = null;
+                        }
+
+                        if(moveFromServer.getMoveFrom().x - 2 == moveFromServer.getMoveTo().x){
+                            Game.board[moveFromServer.getMoveTo().x + 1][moveFromServer.getMoveTo().y] = Game.board[moveFromServer.getMoveTo().x - 2][moveFromServer.getMoveTo().y];
+                            Game.board[moveFromServer.getMoveTo().x - 2][moveFromServer.getMoveTo().y] = null;
+                        }
+                    }
+
+                    Game.board[moveFromServer.getMoveTo().x][moveFromServer.getMoveTo().y] = Game.board[moveFromServer.getMoveFrom().x][moveFromServer.getMoveFrom().y];
+                    Game.board[moveFromServer.getMoveFrom().x][moveFromServer.getMoveFrom().y] = null;
+
+                    chessBoard.invalidate();
+                    mp.start();
+                    if(chessBoard.controlCheckMate()){
+                        //sharePrefrencesHandler();
+                        new SharedPreferencesTask().execute();
                     }
                 }
 
-                Game.board[moveFromServer.getMoveTo().x][moveFromServer.getMoveTo().y] = Game.board[moveFromServer.getMoveFrom().x][moveFromServer.getMoveFrom().y];
-                Game.board[moveFromServer.getMoveFrom().x][moveFromServer.getMoveFrom().y] = null;
+                @Override
+                public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
 
-                chessBoard.invalidate();
-                mp.start();
-                if(chessBoard.controlCheckMate()){
-                    sharePrefrencesHandler();
                 }
-            }
 
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                Log.d("Trida", "Moves Changed");
-            }
+                @Override
+                public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
 
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-                Log.d("Trida", "Moves Added");
-                Toast.makeText(getBaseContext(), "This is my Toast message DEL!",
-                        Toast.LENGTH_LONG).show();
-            }
+                }
 
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                @Override
+                public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
 
-            }
+                }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
+                }
+            };
+            RoomDatabaseHandler.addOnMovesListener(moveListener);
     }
-
-    private void sharePrefrencesHandler(){
-        sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-        int tmp = sharedPreferences.getInt("amountOfGames", 0);
-        tmp++;
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("amountOfGames", tmp);
-
-        int size = sharedPreferences.getInt("sizeOfTableGame", 0);
-        Date date = new Date(System.currentTimeMillis());
-        editor.putInt("Win_" + size,    0);
-        editor.putInt("Lose_" + size,    1);
-        editor.putLong("Date_" + size,  date.getTime());
-        editor.putInt("sizeOfTableGame",++size);
-        editor.putInt("amountOfGames", tmp);
-        editor.apply();
-    }
-
 
     public static SharedPreferences getSharedPreferences(Context context){
         return  context.getSharedPreferences("userInfo",Context.MODE_PRIVATE);
     }
 
-
     public static Figure[][] getBoard(){
         return board;
+    }
+
+    public class SharedPreferencesTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+            int tmp = sharedPreferences.getInt("amountOfGames", 0);
+            tmp++;
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putInt("amountOfGames", tmp);
+
+            int size = sharedPreferences.getInt("sizeOfTableGame", 0);
+            Date date = new Date(System.currentTimeMillis());
+            editor.putInt("Win_" + size,    0);
+            editor.putInt("Lose_" + size,    1);
+            editor.putLong("Date_" + size,  date.getTime());
+            editor.putInt("sizeOfTableGame",++size);
+            editor.putInt("amountOfGames", tmp);
+            editor.apply();
+            return null;
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+            RoomDatabaseHandler.removeMovesListener(moveListener);
     }
 }
 
